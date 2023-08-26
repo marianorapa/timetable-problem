@@ -100,8 +100,13 @@ public class GUI extends JFrame implements ActionListener {
   }
   
   private void run() {
-    TimeTable bestTimeTable = ga.generateTimeTable();
-    ga.printTimeTable(bestTimeTable);
+    try {
+      TimeTable bestTimeTable = ga.generateTimeTable();
+      ga.printTimeTable(bestTimeTable);
+    }
+    catch (MaxGenerationsExceededException e) {
+      System.err.println("Max generations exceeded");
+    }
   }  
   
   private void printConf() {

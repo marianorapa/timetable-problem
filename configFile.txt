@@ -1,0 +1,12 @@
+{
+  "dataFile": "/home/eurekalabs/Repos/kthscheduling/input/kth_S",
+  "mutationProbability": 60,
+  "populationSize": 100,
+  "selectionType": "NORMAL",
+  "mutationType": "NORMAL",
+  "resultsFilename": "results-kth_S.csv",
+  "maxGenerations": 7000,
+
+  "selectionSize": 30,
+  "crossoverProbability": 50
+}

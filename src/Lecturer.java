@@ -42,4 +42,9 @@ public class Lecturer {
   public static void resetId() {
     nextId = 0;
   }
+
+  @Override
+  public String toString() {
+    return "Lecturer: " + this.getName() + " (" + id + ")";
+  }
 }

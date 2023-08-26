@@ -38,4 +38,9 @@ public class StudentGroup {
 	public static void resetId() {
 	  nextId = 0;
 	}
+
+	@Override
+	public String toString() {
+		return "Student group: " + this.getName() + " (" + id + ")";
+	}
 }

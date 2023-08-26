@@ -68,4 +68,23 @@ public class Event {
 		}
 		return null;
 	}
+
+	@Override
+	public String toString() {
+		StringBuilder result = new StringBuilder();
+		result.append("Id: ").append(id).append(" - ");
+		result.append("Type: ").append(type).append(" - ");
+		result.append("Group id: ").append(eventGroupId).append(" - ");
+		result.append("Size: ").append(size).append(" - ");
+		if (lecturer != null) {
+			result.append(lecturer).append(" - ");
+		}
+		if (course != null) {
+			result.append(course).append(" - ");
+		}
+		if (studentGroup != null) {
+			result.append(studentGroup);
+		}
+		return result.toString();
+	}
 }

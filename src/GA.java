@@ -6,6 +6,17 @@ import java.io.*;
  */
 public class GA {
 
+  private int maxGenerations = 10000;
+  private int finalGenerations;
+
+  public int getFinalGenerations() {
+    return finalGenerations;
+  }
+
+  public void setMaxGenerations(int maxGenerations) {
+    this.maxGenerations = maxGenerations;
+  }
+
   public enum SELECTION_TYPE {
     NORMAL,
     ROULETTE_WHEEL,
@@ -38,7 +49,7 @@ public class GA {
   private int DESIRED_FITNESS;
   private int MAX_POPULATION_SIZE;
   private int MUTATION_PROBABILITY; // compared with 1000
-  private int CROSSOVER_PROBABILITY; // compared with 1000
+  private int CROSSOVER_PROBABILITY; // compared with 1000 - NOT USED
   private int SELECTION_SIZE;
   private int TOURNAMENT_POOL_SIZE = 5;
   private SELECTION_TYPE selectionType = SELECTION_TYPE.NORMAL;
@@ -54,7 +65,7 @@ public class GA {
   /*
   * Returns a schedule based on the given constraints
   */
-  public TimeTable generateTimeTable() {
+  public TimeTable generateTimeTable() throws MaxGenerationsExceededException {
     // run until the fitness is high enough
     // high enough should at least mean that
     // all hard constraints are solved
@@ -72,7 +83,7 @@ public class GA {
     population.sortIndividuals();
 
     int numGenerations = 1;
-    while (population.getTopIndividual().getFitness() < DESIRED_FITNESS) {
+    while (population.getTopIndividual().getFitness() < DESIRED_FITNESS && numGenerations < maxGenerations) {
       Population children = breed(population, MAX_POPULATION_SIZE);
       population = selection(population, children);
 
@@ -83,6 +94,11 @@ public class GA {
       numGenerations++;
       System.out.println("#GENERATIONS: " + numGenerations + " BEST FITNESS: " + population.getTopIndividual().getFitness());
     }
+
+    if (numGenerations >= maxGenerations) {
+      throw new MaxGenerationsExceededException(maxGenerations);
+    }
+    this.finalGenerations = numGenerations;
 
     return population.getTopIndividual();
   }
@@ -664,8 +680,16 @@ public class GA {
     mutationType = MUTATION_TYPE.values()[i];
   }
 
+  public void setMutationType(String type) {
+    mutationType = MUTATION_TYPE.valueOf(type);
+  }
+
   public void setSelectionType(int i) {
     selectionType = SELECTION_TYPE.values()[i];
+  }
+
+  public void setSelectionType(String type) {
+    selectionType = SELECTION_TYPE.valueOf(type);
   }
 
   // print the given time table in a readable format

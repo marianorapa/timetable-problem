@@ -48,4 +48,9 @@ public class Course {
 	public void resetId() {
 	  nextId = 0;
 	}
+
+	@Override
+	public String toString() {
+		return "Course: " + this.getName() + " (" + id + ")";
+	}
 }

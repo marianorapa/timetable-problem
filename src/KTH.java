@@ -177,6 +177,7 @@ public class KTH {
   
   public void printTimeTable(TimeTable tt) {
     StringBuilder sb = new StringBuilder();
+    List<Integer> eventsCreated = new ArrayList<>();
     int nrSlots = 0;
     int nrEvents = 0;
     for(RoomTimeTable rtt : tt.getRoomTimeTables()) {
@@ -187,7 +188,7 @@ public class KTH {
         for (int day = 0; day < RoomTimeTable.NUM_DAYS; day++) {
           int eventId = rtt.getEvent(day, timeslot);
           if(eventId > nrEvents) {
-	    nrEvents = eventId;	
+	          nrEvents = eventId;
           }
 	  nrSlots++;
 	  /*
@@ -209,6 +210,14 @@ public class KTH {
       }    
     }
     System.out.println(sb.toString());
+
+    System.out.println("--------");
+    System.out.println("References: ");
+    events.values().forEach(event -> {
+      System.out.println(event.toString());
+    });
+    System.out.println("--------");
+
     System.out.println("Number of slots: " + nrSlots);
     System.out.println("Number of events: " + nrEvents);
     System.out.println("Sparseness: " + ((double)nrEvents/(double)nrSlots));
