@@ -5,12 +5,12 @@ public class Population {
 
   // time slot class used when creating the random population
   public class TimeSlot {
-    private int roomId;
+    private int sgId; // Student group id
     private int day;
     private int timeSlot;
     private boolean available = true;
-    public TimeSlot(int roomId, int day, int timeSlot) {
-      this.roomId = roomId;
+    public TimeSlot(int sgId, int day, int timeSlot) {
+      this.sgId = sgId;
       this.day = day;
       this.timeSlot = timeSlot;
     }
@@ -24,25 +24,25 @@ public class Population {
   }
 
   public void createRandomIndividuals(int numIndividuals, KTH kth) {
-    Map<Integer, Room> rooms = kth.getRooms();
-    int numRooms = kth.getRooms().size();
+    Map<Integer, StudentGroup> studentGroups = kth.getStudentGroups();
 
     for(int i = 0; i < numIndividuals; i++) {
       // register all available timeslots
       ArrayList<TimeSlot> availableTimeSlots = new ArrayList<TimeSlot>();
-      for(int roomId : rooms.keySet()) {
-        for(int d = 0; d < RoomTimeTable.NUM_DAYS; d++) {
-          for(int t = 0; t < RoomTimeTable.NUM_TIMESLOTS; t++) {
-            availableTimeSlots.add(new TimeSlot(roomId, d, t));
+      for(int sgId : studentGroups.keySet()) {
+        for(int d = 0; d < StudentGroupTimeTable.NUM_DAYS; d++) {
+          for(int t = 0; t < StudentGroupTimeTable.NUM_TIMESLOTS; t++) {
+            // Timeslot es ahora un dia y hora de un grupo de estudiantes
+            availableTimeSlots.add(new TimeSlot(sgId, d, t));
           }
         }
       }
 
-      TimeTable tt = new TimeTable(numRooms);
-      for(int roomId : rooms.keySet()) {
-        Room room = rooms.get(roomId);
-        RoomTimeTable rtt = new RoomTimeTable(room);
-        tt.putRoomTimeTable(roomId, rtt);
+      TimeTable tt = new TimeTable(studentGroups.size());
+      for (int sgId : studentGroups.keySet()) {
+        StudentGroup studentGroup = studentGroups.get(sgId);
+        StudentGroupTimeTable studentGroupTimeTable = new StudentGroupTimeTable(studentGroup);
+        tt.putSgTimeTable(sgId, studentGroupTimeTable);
       }
 
       // index variables
@@ -52,10 +52,10 @@ public class Population {
 
       // assign all event to any randomly selected available timeslot
       Random rand = new Random(System.currentTimeMillis());
-      for(Event e : kth.getEvents().values()) {
+      for (Event e : kth.getEvents().values()) {
         TimeSlot availableTimeSlot = availableTimeSlots.get(rand.nextInt(availableTimeSlots.size()));
-        RoomTimeTable rtt = tt.getRoomTimeTables()[availableTimeSlot.roomId];
-        rtt.setEvent(availableTimeSlot.day, availableTimeSlot.timeSlot, e.getId());
+        StudentGroupTimeTable sgTimeTable = tt.getSgTimeTables()[availableTimeSlot.sgId];
+        sgTimeTable.setEvent(availableTimeSlot.day, availableTimeSlot.timeSlot, e.getId());
         availableTimeSlots.remove(availableTimeSlot);
         /* DEBUG
         System.out.println("==============");

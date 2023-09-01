@@ -7,18 +7,17 @@ public class Event {
   private final Type type;
 	private final int id;
   private final int eventGroupId;
-  private final int size;
+//  private final int size;
   private final Lecturer lecturer;
 	private final Course course;
-  private final StudentGroup studentGroup;
+//  private final StudentGroup studentGroup;
 
-	public Event(Type t, int size, Lecturer l, Course c, StudentGroup s,
-                                                      int eventGroupId) {
+	public Event(Type t, Lecturer l, Course c, int eventGroupId) {
     this.type = t;
-    this.size = size;
+//    this.size = size;
     this.lecturer = l;
 		this.course = c;
-    this.studentGroup = s;
+//    this.studentGroup = s;
     id = nextId++;
     this.eventGroupId = eventGroupId;
 	}
@@ -31,9 +30,9 @@ public class Event {
     return eventGroupId;
   }
 
-  public int getSize() {
-    return size;
-  }
+//  public int getSize() {
+//    return size;
+//  }
 
 	public Course getCourse() {
 		return course;
@@ -47,9 +46,9 @@ public class Event {
 		return type;
 	}
   
-  public StudentGroup getStudentGroup() {
-    return studentGroup;
-  }
+//  public StudentGroup getStudentGroup() {
+//    return studentGroup;
+//  }
   
 	public static void resetId() {
 	  nextId = 1;
@@ -75,16 +74,16 @@ public class Event {
 		result.append("Id: ").append(id).append(" - ");
 		result.append("Type: ").append(type).append(" - ");
 		result.append("Group id: ").append(eventGroupId).append(" - ");
-		result.append("Size: ").append(size).append(" - ");
+//		result.append("Size: ").append(size).append(" - ");
 		if (lecturer != null) {
 			result.append(lecturer).append(" - ");
 		}
 		if (course != null) {
 			result.append(course).append(" - ");
 		}
-		if (studentGroup != null) {
-			result.append(studentGroup);
-		}
+//		if (studentGroup != null) {
+//			result.append(studentGroup);
+//		}
 		return result.toString();
 	}
 }

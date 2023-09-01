@@ -1,11 +1,11 @@
 {
-  "dataFile": "/home/eurekalabs/Repos/kthscheduling/input/kth_S",
-  "mutationProbability": 60,
-  "populationSize": 100,
+  "dataFile": "/home/eurekalabs/Repos/kthscheduling/input/secundaria-arg-l.txt",
+  "mutationProbability": 10,
+  "populationSize": 5000,
   "selectionType": "NORMAL",
   "mutationType": "NORMAL",
-  "resultsFilename": "results-kth_S.csv",
-  "maxGenerations": 7000,
+  "resultsFilename": "nr_secundaria-arg-l.txt",
+  "maxGenerations": 50000,
 
   "selectionSize": 30,
   "crossoverProbability": 50

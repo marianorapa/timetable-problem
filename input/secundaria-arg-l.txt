@@ -1,0 +1,40 @@
+# ROOMS
+R1_A 30 0
+R1_B 30 0
+R1_C 30 0
+R2_A 30 0
+R2_B 30 0
+R2_C 30 0
+R3_A 30 0
+R3_B 30 0
+R3_C 30 0
+# COURSES
+Matematica 4 0 0
+Lengua 4 0 0
+Historia 2 0 0
+Geografia 2 0 0
+Biologia 2 0 0
+Fisico-quimica 2 0 0
+Ingles 2 0 0
+Artistica 2 0 0
+# LECTURERS
+Matias Matematica
+Mariano Matematica
+Lorena Lengua
+Lucia Lengua
+Julia Historia
+Giuli Geografia
+Bibiana Biologia
+Fer Fisico-quimica
+Ingrid Ingles
+Ana Artistica
+# STUDENTGROUPS
+1_A 29 Matematica Lengua Historia Geografia Biologia Fisico-quimica Ingles Artistica
+1_B 27 Matematica Lengua Historia Geografia Biologia Fisico-quimica Ingles Artistica
+1_C 28 Matematica Lengua Historia Geografia Biologia Fisico-quimica Ingles Artistica
+2_A 30 Matematica Lengua Historia Geografia Biologia Fisico-quimica Ingles Artistica
+2_B 29 Matematica Lengua Historia Geografia Biologia Fisico-quimica Ingles Artistica
+2_C 27 Matematica Lengua Historia Geografia Biologia Fisico-quimica Ingles Artistica
+3_A 30 Matematica Lengua Historia Geografia Biologia Fisico-quimica Ingles Artistica
+3_B 26 Matematica Lengua Historia Geografia Biologia Fisico-quimica Ingles Artistica
+3_C 27 Matematica Lengua Historia Geografia Biologia Fisico-quimica Ingles Artistica

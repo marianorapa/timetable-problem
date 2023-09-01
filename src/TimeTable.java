@@ -1,13 +1,11 @@
-import java.util.*;
-
 public class TimeTable implements Comparable<TimeTable> {
   private int fitness;
 
   // The timetables for each room
-  private RoomTimeTable[] roomTimeTables;
+  private StudentGroupTimeTable[] sgTimeTables;
 
   public TimeTable(int numRooms) {
-    roomTimeTables = new RoomTimeTable[numRooms];
+    sgTimeTables = new StudentGroupTimeTable[numRooms];
   }
 
   public int getFitness() {
@@ -18,17 +16,17 @@ public class TimeTable implements Comparable<TimeTable> {
     this.fitness = fitness;
   }
 
-  public RoomTimeTable[] getRoomTimeTables() {
-    return roomTimeTables;
+  public StudentGroupTimeTable[] getSgTimeTables() {
+    return sgTimeTables;
   }
 
-  public void putRoomTimeTable(int i, RoomTimeTable rtt) {
-    roomTimeTables[i] = rtt;
+  public void putSgTimeTable(int i, StudentGroupTimeTable rtt) {
+    sgTimeTables[i] = rtt;
   }
 
   public String toString() {
     StringBuilder sb = new StringBuilder();
-    for (RoomTimeTable rtt : roomTimeTables) {
+    for (StudentGroupTimeTable rtt : sgTimeTables) {
       sb.append(rtt.toString());
       sb.append("\n");
     }

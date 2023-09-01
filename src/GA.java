@@ -305,24 +305,24 @@ public class GA {
   private TimeTable crossoverWithPoint(TimeTable t1, TimeTable t2) {
 		TimeTable child = new TimeTable(kth.getNumRooms());
 
-		int interval = kth.getNumRooms() * RoomTimeTable.NUM_TIMESLOTS *
-																			 RoomTimeTable.NUM_DAYS;
+		int interval = kth.getNumRooms() * StudentGroupTimeTable.NUM_TIMESLOTS *
+																			 StudentGroupTimeTable.NUM_DAYS;
 
 		int point = new Random(System.currentTimeMillis()).nextInt(interval);
 
-		RoomTimeTable[] rtts1 = t1.getRoomTimeTables();
-		RoomTimeTable[] rtts2 = t2.getRoomTimeTables();
+		StudentGroupTimeTable[] rtts1 = t1.getSgTimeTables();
+		StudentGroupTimeTable[] rtts2 = t2.getSgTimeTables();
 
 		int gene = 0;
 
 		// iterate over the genes
 		for (int i = 0; i < kth.getNumRooms(); i++) {
-			RoomTimeTable rtt = new RoomTimeTable(rtts1[i].getRoom());
+			StudentGroupTimeTable rtt = new StudentGroupTimeTable(rtts1[i].getStudentGroup());
 
 			// for each available time
-			for (int timeslot = 0; timeslot < RoomTimeTable.NUM_TIMESLOTS;
+			for (int timeslot = 0; timeslot < StudentGroupTimeTable.NUM_TIMESLOTS;
 																											timeslot++) {
-				for (int day = 0; day < RoomTimeTable.NUM_DAYS; day++) {
+				for (int day = 0; day < StudentGroupTimeTable.NUM_DAYS; day++) {
 					int allele;
 
 					if (gene < point) {
@@ -336,7 +336,7 @@ public class GA {
 				}
 			}
 
-			child.putRoomTimeTable(i, rtt);
+			child.putSgTimeTable(i, rtt);
 		}
 
     return child;
@@ -353,14 +353,14 @@ public class GA {
       locations.put(eventID, new LinkedList<RoomDayTime>());
     }
 
-    RoomTimeTable[] rtts = tt.getRoomTimeTables();
+    StudentGroupTimeTable[] rtts = tt.getSgTimeTables();
 
     for (int i = 0; i < kth.getNumRooms(); i++) {
-      RoomTimeTable rtt = rtts[i];
+      StudentGroupTimeTable rtt = rtts[i];
       // for each available time
-      for (int timeslot = 0; timeslot < RoomTimeTable.NUM_TIMESLOTS;
+      for (int timeslot = 0; timeslot < StudentGroupTimeTable.NUM_TIMESLOTS;
                                                      timeslot++) {
-        for (int day = 0; day < RoomTimeTable.NUM_DAYS; day++) {
+        for (int day = 0; day < StudentGroupTimeTable.NUM_DAYS; day++) {
           int bookedEvent = rtt.getEvent(day, timeslot);
           if (bookedEvent == 0) {
             // add to usable slots
@@ -424,18 +424,18 @@ public class GA {
 
   private void mutate(TimeTable tt) {
     Random rand = new Random(System.currentTimeMillis());
-    RoomTimeTable[] rtts = tt.getRoomTimeTables();
+    StudentGroupTimeTable[] rtts = tt.getSgTimeTables();
 
     for (int i = 0; i < kth.getNumRooms(); i++) {
-      RoomTimeTable rtt = rtts[i];
+      StudentGroupTimeTable rtt = rtts[i];
       // for each available time
-      for (int timeslot = 0; timeslot < RoomTimeTable.NUM_TIMESLOTS;
+      for (int timeslot = 0; timeslot < StudentGroupTimeTable.NUM_TIMESLOTS;
                                                             timeslot++) {
-        for (int day = 0; day < RoomTimeTable.NUM_DAYS; day++) {
+        for (int day = 0; day < StudentGroupTimeTable.NUM_DAYS; day++) {
           if (rand.nextInt(1000) < MUTATION_PROBABILITY) {
             // mutate this gene
-            int swapTargetDay = rand.nextInt(RoomTimeTable.NUM_DAYS);
-            int swapTargetTimeslot = rand.nextInt(RoomTimeTable.NUM_TIMESLOTS);
+            int swapTargetDay = rand.nextInt(StudentGroupTimeTable.NUM_DAYS);
+            int swapTargetTimeslot = rand.nextInt(StudentGroupTimeTable.NUM_TIMESLOTS);
             int swapTargetEventId = rtt.getEvent(swapTargetDay, swapTargetTimeslot);
             int swapSrcEventId = rtt.getEvent(day, timeslot);
             rtt.setEvent(swapTargetDay, swapTargetTimeslot, swapSrcEventId);
@@ -453,18 +453,95 @@ public class GA {
   private void fitness(TimeTable tt) {
     // set the fitness to this time table
     
-    int studentGroupDoubleBookings = studentGroupDoubleBookings(tt);
+//    int studentGroupDoubleBookings = studentGroupDoubleBookings(tt);
     int lecturerDoubleBookings = lecturerDoubleBookings(tt);
-    int roomCapacityBreaches = roomCapacityBreaches(tt);
-    int roomTypeBreaches = roomTypeBreaches(tt);
+    int extraOrMissingLectures = extraOrMissingLectures(tt);
+    int multipleTeachersForSameSGCourse = multipleTeachersForSameStudentGroupCourse(tt);
+//    int roomCapacityBreaches = roomCapacityBreaches(tt);
+//    int roomTypeBreaches = roomTypeBreaches(tt);
 
-    int numBreaches = studentGroupDoubleBookings * 2+
-                      lecturerDoubleBookings +
-                      roomCapacityBreaches * 4 +
-                      roomTypeBreaches * 4;
+    int numBreaches = 2 * lecturerDoubleBookings + 4 * extraOrMissingLectures
+        + 12 * multipleTeachersForSameSGCourse;
+//                      roomCapacityBreaches * 4 +
+//                      roomTypeBreaches * 4;
 
     int fitness = -1 * numBreaches;
     tt.setFitness(fitness);
+  }
+
+  private int extraOrMissingLectures(TimeTable tt) {
+    // Each student group should have a number of expected lessons for each course
+    Map<Integer, Map<Integer, Integer>> expectedLectures = new HashMap<>();
+    for (StudentGroup sg : kth.getStudentGroups().values()) {
+      Map<Integer, Integer> sgLectures = new HashMap<>();
+      for (Course course : sg.getCourses()) {
+        sgLectures.put(course.getId(), course.getNumLectures());
+      }
+      expectedLectures.put(sg.getId(), sgLectures);
+    }
+
+    Map<Integer, Map<Integer, Integer>> actualLectures = new HashMap<>();
+    for (StudentGroupTimeTable sgTimeTable : tt.getSgTimeTables()) {
+      int sgId = sgTimeTable.getStudentGroup().getId();
+      Map<Integer, Integer> sgActualLectures = new HashMap<>();
+      for (int timeslot = 0; timeslot < StudentGroupTimeTable.NUM_TIMESLOTS; timeslot++) {
+        for (int day = 0; day < StudentGroupTimeTable.NUM_DAYS; day++) {
+          int eventId = sgTimeTable.getEvent(day, timeslot);
+          Event event = kth.getEvent(eventId);
+          if (event != null) {
+            int courseId = event.getCourse().getId();
+            if (!sgActualLectures.containsKey(courseId)) {
+              sgActualLectures.put(courseId, 0);
+            }
+            sgActualLectures.put(courseId, sgActualLectures.get(courseId) + 1);
+          }
+        }
+      }
+      actualLectures.put(sgId, sgActualLectures);
+    }
+    int extraOrMissingLectures = 0;
+    for (Integer sgId : expectedLectures.keySet()) {
+      Map<Integer, Integer> expectedSgLessons = expectedLectures.get(sgId);
+      Map<Integer, Integer> actualSgLessons = actualLectures.get(sgId);
+      for (Integer courseId : expectedSgLessons.keySet()) {
+        Integer expectedCourseLessons = expectedSgLessons.get(courseId);
+        Integer actualCourseLessons = actualSgLessons.get(courseId) != null ? actualSgLessons.get(courseId) : 0;
+        extraOrMissingLectures += Math.abs(expectedCourseLessons - actualCourseLessons);
+      }
+    }
+
+    return extraOrMissingLectures;
+  }
+
+
+  /**
+   * TODO: Checks how many times a lecture for the same student group is taught by a different teacher
+   * @return
+   */
+  private int multipleTeachersForSameStudentGroupCourse(TimeTable tt) {
+    int multipleTeachersCount = 0;
+    for (StudentGroupTimeTable sgTimeTable : tt.getSgTimeTables()) {
+      HashMap<Course, Lecturer> courseLecturerMap = new HashMap<>();
+      for (int timeslot = 0; timeslot < StudentGroupTimeTable.NUM_TIMESLOTS; timeslot++) {
+        for (int day = 0; day < StudentGroupTimeTable.NUM_DAYS; day++) {
+          int eventId = sgTimeTable.getEvent(day, timeslot);
+          Event event = kth.getEvent(eventId);
+          Course course = event.getCourse();
+          Lecturer lecturer = courseLecturerMap.get(course);
+          if (lecturer != null) {
+            // Si el lecturer del evento es distinto al almacenado en el mapa, hay mas de uno para la misma materia
+            if (event.getLecturer() != lecturer) {
+              multipleTeachersCount += 1;
+            }
+          }
+          else {
+            // Si no esta el curso en el mapa, lo agregamos con el lecturer del evento
+            courseLecturerMap.put(course, event.getLecturer());
+          }
+        }
+      }
+    }
+    return multipleTeachersCount;
   }
 
   //////////////////////////
@@ -479,66 +556,6 @@ public class GA {
   // Invalid timeslots may not be used
   // A room can not be double booked at a certain timeslot
 
-  private int studentGroupDoubleBookings(TimeTable tt) {
-    int numBreaches = 0;
-
-    RoomTimeTable[] rtts = tt.getRoomTimeTables();
-
-    for (int timeslot = 0; timeslot < RoomTimeTable.NUM_TIMESLOTS;
-                                                        timeslot++) {
-      for (int day = 0; day < RoomTimeTable.NUM_DAYS; day++) {
-        for (StudentGroup sg : kth.getStudentGroups().values()) {
-          
-          HashMap<Integer, Integer> eventGroupCounts = 
-          new HashMap<Integer, Integer>();
-
-          for (RoomTimeTable rtt : rtts) {
-            int eventID = rtt.getEvent(day, timeslot);
-
-            // only look at booked timeslots
-            if (eventID != 0) {
-              Event event = kth.getEvent(eventID);
-              int sgID = event.getStudentGroup().getId();
-              
-              // if this bookings is for the current studentgroup
-              if (sgID == sg.getId()) {
-                int eventGroupID = event.getEventGroupId();
-                
-                // increment the count for this event group id
-                if (!eventGroupCounts.containsKey(eventGroupID)) {
-                  eventGroupCounts.put(eventGroupID, 1);
-                
-                } else {
-                  int oldCount = eventGroupCounts.get(eventGroupID);
-                  eventGroupCounts.put(eventGroupID, oldCount + 1);
-                }
-              }
-            }
-          }
-          
-          // find the biggest event group
-          int biggestGroup; 
-          int biggestGroupSize = 0;
-          int sumGroupSize = 0;
-          for (Map.Entry<Integer, Integer> entry : 
-                                  eventGroupCounts.entrySet()) {
-            
-            sumGroupSize += entry.getValue();
-
-            if (entry.getValue() > biggestGroupSize) {
-              biggestGroup = entry.getKey();
-              biggestGroupSize = entry.getValue();
-            }
-          }
-
-          numBreaches += sumGroupSize - biggestGroupSize;
-        }
-      }
-    }
-
-    return numBreaches;
-  }
-  
   private int max(int a, int b, int c) {
     int max = a;
 
@@ -560,19 +577,19 @@ public class GA {
   private int lecturerDoubleBookings(TimeTable tt) {
     int numBreaches = 0;
 
-    RoomTimeTable[] rtts = tt.getRoomTimeTables();
+    StudentGroupTimeTable[] timeTables = tt.getSgTimeTables();
 
     for (Lecturer lecturer : kth.getLecturers().values()) {
 
       // for each time
-      for (int timeslot = 0; timeslot < RoomTimeTable.NUM_TIMESLOTS;
+      for (int timeslot = 0; timeslot < StudentGroupTimeTable.NUM_TIMESLOTS;
                                                            timeslot++) {
 
-        for (int day = 0; day < RoomTimeTable.NUM_DAYS; day++) {
+        for (int day = 0; day < StudentGroupTimeTable.NUM_DAYS; day++) {
           int numBookings = 0;
 
-          for (RoomTimeTable rtt : rtts) {
-            int eventID = rtt.getEvent(day, timeslot);
+          for (StudentGroupTimeTable studentGroupTimeTable : timeTables) {
+            int eventID = studentGroupTimeTable.getEvent(day, timeslot);
 
             // 0 is unbooked
             if (eventID != 0) {
@@ -600,65 +617,7 @@ public class GA {
     return numBreaches;
   }
 
-  // num times a room is too small for the event booked
-  private int roomCapacityBreaches(TimeTable tt) {
-    int numBreaches = 0;
 
-    RoomTimeTable[] rtts = tt.getRoomTimeTables();
-
-    for (RoomTimeTable rtt : rtts) {
-      int roomSize = rtt.getRoom().getCapacity();
-
-      // for each time
-      for (int timeslot = 0; timeslot < RoomTimeTable.NUM_TIMESLOTS;
-                                                          timeslot++) {
-
-        for (int day = 0; day < RoomTimeTable.NUM_DAYS; day++) {
-          int eventID = rtt.getEvent(day, timeslot);
-
-          // only look at booked timeslots
-          if (eventID != 0) {
-            int eventSize = kth.getEvent(eventID).getSize();
-            if (roomSize < eventSize) {
-              numBreaches++;
-            }
-          }
-        }
-      }
-    }
-
-    return numBreaches;
-  }
-
-  // num times an event is booked to the wrong room type
-  private int roomTypeBreaches(TimeTable tt) {
-    int numBreaches = 0;
-
-    RoomTimeTable[] rtts = tt.getRoomTimeTables();
-
-    for (RoomTimeTable rtt : rtts) {
-      Event.Type roomType = rtt.getRoom().getType();
-
-      // for each time
-      for (int timeslot = 0; timeslot < RoomTimeTable.NUM_TIMESLOTS;
-                                                          timeslot++) {
-
-        for (int day = 0; day < RoomTimeTable.NUM_DAYS; day++) {
-          int eventID = rtt.getEvent(day, timeslot);
-
-          // only look at booked timeslots
-          if (eventID != 0) {
-            Event.Type type = kth.getEvent(eventID).getType();
-            if (roomType != type) {
-              numBreaches++;
-            }
-          }
-        }
-      }
-    }
-
-    return numBreaches;
-  }
 
   public void setMutationProbability(int p) {
     MUTATION_PROBABILITY = p;

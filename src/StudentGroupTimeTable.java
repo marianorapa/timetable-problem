@@ -1,4 +1,4 @@
-public class RoomTimeTable {
+public class StudentGroupTimeTable {
 
   public static final int NUM_DAYS = 5;
   public static final int NUM_TIMESLOTS = 4;
@@ -8,10 +8,10 @@ public class RoomTimeTable {
   // rows are timeslots, columns are days
   private int[][] timeSlots;
 
-  private Room room;
+  private StudentGroup studentGroup;
 
-  public RoomTimeTable(Room room) {
-    this.room = room;
+  public StudentGroupTimeTable(StudentGroup studentGroup) {
+    this.studentGroup = studentGroup;
     timeSlots = new int[NUM_TIMESLOTS][NUM_DAYS];
   }
 
@@ -31,13 +31,13 @@ public class RoomTimeTable {
     timeSlots[timeslot][day] = eventId;
   }
 
-  public Room getRoom() {
-    return room;
+  public StudentGroup getStudentGroup() {
+    return studentGroup;
   }
 
   public String toString() {
     StringBuilder sb = new StringBuilder();
-    sb.append("Room: " + room.getName() + "\n");
+    sb.append("Student group: " + studentGroup.getName() + "\n");
     for (int timeslot = 0; timeslot < NUM_TIMESLOTS; timeslot++) {
       for (int day = 0; day < NUM_DAYS; day++) {
         sb.append("[\t" + timeSlots[timeslot][day] + "\t]");

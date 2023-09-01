@@ -1,9 +1,10 @@
 import java.util.*;
 
 /*
-* Represents all the persistent information from the input
-*/
+ * Represents all the persistent information from the input
+ */
 public class KTH {
+
   private Map<Integer, Room> rooms;
   private Map<Integer, Course> courses;
   private Map<Integer, StudentGroup> studentGroups;
@@ -59,7 +60,7 @@ public class KTH {
   public Map<Integer, Lecturer> getLecturers() {
     return lecturers;
   }
-  
+
   public Event getEvent(int id) {
     return events.get(id);
   }
@@ -75,28 +76,22 @@ public class KTH {
   public void createEvents() {
     // event group ids are unique
     int eventGroupID = 1;
+    int lecturerNumber = 0;
+    for (StudentGroup studentGroup : studentGroups.values()) {
+      for (Course course : courses.values()) {
+        List<Lecturer> possibleLecturers = new ArrayList<>();
+        for (Lecturer lecturer : lecturers.values()) {
+          if (lecturer.canTeach(course)) {
+            possibleLecturers.add(lecturer);
+          }
+        }
 
-    for (StudentGroup sg : studentGroups.values()) {
-      for (Course course : sg.getCourses()) {
-        
         // create lecture events
         for (int i = 0; i < course.getNumLectures(); i++) {
-          // find a lecturer for this course
-          // TODO: right now, only one lecturer per course, fixit!
-          List<Lecturer> possibleLecturers = new ArrayList<Lecturer>();
-          for (Lecturer lecturer : lecturers.values()) {
-            if (lecturer.canTeach(course)) {
-              possibleLecturers.add(lecturer);
-            }
-          }
-
-          // temp, just take the first possible teacher
           Event event = new Event(Event.Type.LECTURE,
-                                  sg.getSize(),
-                                  possibleLecturers.get(0),
-                                  course,
-                                  sg,
-                                  eventGroupID);
+              possibleLecturers.get(lecturerNumber % possibleLecturers.size()),
+              course,
+              eventGroupID);
 
           events.put(event.getId(), event);
           eventIds.add(event.getId());
@@ -104,64 +99,12 @@ public class KTH {
           // update event group id
           eventGroupID++;
         }
-        
-        // TODO: should maxsize of a subgroup be 40? to fit in the rooms
-        int lessonSize = 40;
-        
-        // create lesson events
-        for (int i = 0; i < course.getNumLessons(); i++) {
-          int sgSize = sg.getSize();
-         
-          // create several events with a part of this studentgroup's
-          // size until their combined size is the same as
-          // the studentgroup's size
-          while (sgSize > 0) {
-            int evSize = sgSize > lessonSize ? lessonSize : sgSize;
-            Event event = new Event(Event.Type.LESSON,
-                                    evSize,
-                                    null, // should this be null or some default TA value?
-                                    course,
-                                    sg,
-                                    eventGroupID);
 
-            events.put(event.getId(), event);
-            eventIds.add(event.getId());
-            sgSize = sgSize - evSize;
-
-          }
-
-          // update event group id
-          eventGroupID++;
-        }
-        
-        // TODO: is this size good?
-        int labSize = 25;
-
-        // create lab events
-        for (int i = 0; i < course.getNumLabs(); i++) {
-          int sgSize = sg.getSize();
-
-          while (sgSize > 0) {
-            int evSize = sgSize > labSize ? labSize : sgSize;
-            Event event = new Event(Event.Type.LAB,
-                                    evSize,
-                                    null,
-                                    course,
-                                    sg,
-                                    eventGroupID);
-
-            events.put(event.getId(), event);
-            eventIds.add(event.getId());
-            sgSize = sgSize - evSize;
-          }
-
-          // update event group id
-          eventGroupID++;
-        }
       }
+      lecturerNumber += 1;
     }
   }
-  
+
   public void clear() {
     Room.resetId();
     Event.resetId();
@@ -174,53 +117,58 @@ public class KTH {
     events.clear();
     eventIds.clear();
   }
-  
+
   public void printTimeTable(TimeTable tt) {
     StringBuilder sb = new StringBuilder();
     List<Integer> eventsCreated = new ArrayList<>();
     int nrSlots = 0;
     int nrEvents = 0;
-    for(RoomTimeTable rtt : tt.getRoomTimeTables()) {
-      sb.append("============ ");    
-      sb.append("Room: " + rtt.getRoom().getName() + " Capacity: " + rtt.getRoom().getCapacity());
-      sb.append(" ============\n");   
-      for (int timeslot = 0; timeslot < RoomTimeTable.NUM_TIMESLOTS; timeslot++) {
-        for (int day = 0; day < RoomTimeTable.NUM_DAYS; day++) {
+    for (StudentGroupTimeTable rtt : tt.getSgTimeTables()) {
+      sb.append("============ ");
+      sb.append("Student group: ").append(rtt.getStudentGroup().getName());
+      sb.append(" ============\n");
+      for (int timeslot = 0; timeslot < StudentGroupTimeTable.NUM_TIMESLOTS; timeslot++) {
+        for (int day = 0; day < StudentGroupTimeTable.NUM_DAYS; day++) {
           int eventId = rtt.getEvent(day, timeslot);
-          if(eventId > nrEvents) {
-	          nrEvents = eventId;
+          if (eventId > nrEvents) {
+            nrEvents = eventId;
           }
-	  nrSlots++;
-	  /*
-          if(eventId != 0) {
-            //Event event = events.get(eventId);
-            sb.append("[ " + event.getCourse().getId() + " " + event.getStudentGroup().getName() + " ");
-            if(event.getType() == Event.Type.LECTURE) {
-              sb.append(event.getLecturer().getName() + " ]");
-            } else {
-              sb.append("    ]");
-            }
-          } else {
-            sb.append("[    -    ]");
-          }
- 	  */
-	  sb.append("[\t" + eventId + "\t]");
+          nrSlots++;
+          sb.append("| ").append(normalizeLength(events.get(eventId) != null ? events.get(eventId).getCourse().getName() : "Libre")).append(" |");
         }
         sb.append("\n");
-      }    
+        // Print teacher names
+        for (int day = 0; day < StudentGroupTimeTable.NUM_DAYS; day++) {
+          int eventId = rtt.getEvent(day, timeslot);
+          if (eventId > nrEvents) {
+            nrEvents = eventId;
+          }
+          nrSlots++;
+          sb.append("| ").append(normalizeLength(events.get(eventId) != null ? " (" + events.get(eventId).getLecturer().getName() + ") " : " - ")).append(" |");
+        }
+        sb.append("\n");
+        sb.append("\n");
+      }
     }
-    System.out.println(sb.toString());
+    System.out.println(sb);
 
-    System.out.println("--------");
-    System.out.println("References: ");
-    events.values().forEach(event -> {
-      System.out.println(event.toString());
-    });
     System.out.println("--------");
 
     System.out.println("Number of slots: " + nrSlots);
     System.out.println("Number of events: " + nrEvents);
-    System.out.println("Sparseness: " + ((double)nrEvents/(double)nrSlots));
+    System.out.println("Sparseness: " + ((double) nrEvents / (double) nrSlots));
   }
-  
+
+  private String normalizeLength(String name) {
+    return center(name, 14);
+  }
+
+  public String center(String text, int len){
+    String out = String.format("%"+len+"s%s%"+len+"s", "",text,"");
+    float mid = (out.length()/2);
+    float start = mid - (len/2);
+    float end = start + len;
+    return out.substring((int)start, (int)end);
+  }
+
 }
