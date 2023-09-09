@@ -453,17 +453,12 @@ public class GA {
   private void fitness(TimeTable tt) {
     // set the fitness to this time table
     
-//    int studentGroupDoubleBookings = studentGroupDoubleBookings(tt);
     int lecturerDoubleBookings = lecturerDoubleBookings(tt);
     int extraOrMissingLectures = extraOrMissingLectures(tt);
     int multipleTeachersForSameSGCourse = multipleTeachersForSameStudentGroupCourse(tt);
-//    int roomCapacityBreaches = roomCapacityBreaches(tt);
-//    int roomTypeBreaches = roomTypeBreaches(tt);
 
     int numBreaches = 2 * lecturerDoubleBookings + 4 * extraOrMissingLectures
         + 12 * multipleTeachersForSameSGCourse;
-//                      roomCapacityBreaches * 4 +
-//                      roomTypeBreaches * 4;
 
     int fitness = -1 * numBreaches;
     tt.setFitness(fitness);
@@ -514,10 +509,6 @@ public class GA {
   }
 
 
-  /**
-   * TODO: Checks how many times a lecture for the same student group is taught by a different teacher
-   * @return
-   */
   private int multipleTeachersForSameStudentGroupCourse(TimeTable tt) {
     int multipleTeachersCount = 0;
     for (StudentGroupTimeTable sgTimeTable : tt.getSgTimeTables()) {
