@@ -426,7 +426,7 @@ public class GA {
     Random rand = new Random(System.currentTimeMillis());
     StudentGroupTimeTable[] rtts = tt.getSgTimeTables();
 
-    for (int i = 0; i < kth.getNumRooms(); i++) {
+    for (int i = 0; i < kth.getStudentGroups().size(); i++) {
       StudentGroupTimeTable rtt = rtts[i];
       // for each available time
       for (int timeslot = 0; timeslot < StudentGroupTimeTable.NUM_TIMESLOTS;
