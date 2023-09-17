@@ -1,6 +1,10 @@
+import java.util.HashMap;
+import java.util.Map;
+
 public class TimeTable implements Comparable<TimeTable> {
   private int fitness;
 
+  private Map<Integer, Integer> ancestorsFitness = new HashMap<>();
   // The timetables for each room
   private StudentGroupTimeTable[] sgTimeTables;
 
@@ -45,5 +49,13 @@ public class TimeTable implements Comparable<TimeTable> {
       return 0;
     else
       return 1;
+  }
+
+  public void setAncestorsFitness(Map<Integer, Integer> generationsFitness) {
+    this.ancestorsFitness = generationsFitness;
+  }
+
+  public Map<Integer, Integer> getAncestorsFitness() {
+    return ancestorsFitness;
   }
 }

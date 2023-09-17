@@ -83,6 +83,8 @@ public class GA {
     population.sortIndividuals();
 
     int numGenerations = 1;
+    Map<Integer, Integer> generationsFitness = new HashMap<>();
+
     while (population.getTopIndividual().getFitness() < DESIRED_FITNESS && numGenerations < maxGenerations) {
       Population children = breed(population, MAX_POPULATION_SIZE);
       population = selection(population, children);
@@ -92,7 +94,9 @@ public class GA {
       population.sortIndividuals(); 
       
       numGenerations++;
-      System.out.println("#GENERATIONS: " + numGenerations + " BEST FITNESS: " + population.getTopIndividual().getFitness());
+      int bestFitness = population.getTopIndividual().getFitness();
+      System.out.println("#GENERATIONS: " + numGenerations + " BEST FITNESS: " + bestFitness);
+      generationsFitness.put(numGenerations, bestFitness);
     }
 
     if (numGenerations >= maxGenerations) {
@@ -100,7 +104,9 @@ public class GA {
     }
     this.finalGenerations = numGenerations;
 
-    return population.getTopIndividual();
+    TimeTable topIndividual = population.getTopIndividual();
+    topIndividual.setAncestorsFitness(generationsFitness);
+    return topIndividual;
   }
 
 

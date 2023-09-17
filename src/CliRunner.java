@@ -20,6 +20,7 @@ public class CliRunner {
     setupGA(ga, config);
 
     BufferedWriter writer = new BufferedWriter(new FileWriter("output/" + config.getResultsFilename()));
+
     for (int i = 0; i < iterations; i++) {
       try {
         TimeTable timeTable = ga.generateTimeTable();
@@ -29,6 +30,15 @@ public class CliRunner {
         System.out.println("Generations: " + finalGenerations);
         System.out.println("====================================================");
         writer.append(String.valueOf(i)).append(",").append(String.valueOf(finalGenerations)).append("\n");
+        BufferedWriter generationsProgress = new BufferedWriter(new FileWriter("output/progress-" + i + "_" + config.getResultsFilename()));
+        timeTable.getAncestorsFitness().forEach((generation, fitness) -> {
+          try {
+            generationsProgress.append(generation.toString()).append(',').append(fitness.toString()).append('\n');
+          } catch (IOException e) {
+            throw new RuntimeException(e);
+          }
+        });
+        generationsProgress.close();
       }
       catch (MaxGenerationsExceededException e) {
         System.err.println("Max generations exceeded in iteration " + i);
