@@ -2,10 +2,30 @@ import java.util.*;
 import java.io.*;
 
 /**
- * Performs the Genetic Algorithm(GA) on the KTH data set.
+ * Performs the Genetic Algorithm(GA) on the data set.
  */
 public class GA {
 
+  public void setLDB(int LDB) {
+    this.LDB = LDB;
+  }
+
+  public void setEML(int EML) {
+    this.EML = EML;
+  }
+
+  public void setMTSC(int MTSC) {
+    this.MTSC = MTSC;
+  }
+
+  // Lecturers double bookings
+  public int LDB = 2;
+
+  // Extra or missing lectures
+  public int EML = 4;
+
+  // Multiple teachers for same course
+  public int MTSC = 12;
   private int maxGenerations = 10000;
   private int finalGenerations;
 
@@ -84,7 +104,6 @@ public class GA {
 
     int numGenerations = 1;
     Map<Integer, Integer> generationsFitness = new HashMap<>();
-
     while (population.getTopIndividual().getFitness() < DESIRED_FITNESS && numGenerations < maxGenerations) {
       Population children = breed(population, MAX_POPULATION_SIZE);
       population = selection(population, children);
@@ -95,17 +114,18 @@ public class GA {
       
       numGenerations++;
       int bestFitness = population.getTopIndividual().getFitness();
-      System.out.println("#GENERATIONS: " + numGenerations + " BEST FITNESS: " + bestFitness);
       generationsFitness.put(numGenerations, bestFitness);
     }
 
     if (numGenerations >= maxGenerations) {
+      System.out.println("Max generations exceeded");
       throw new MaxGenerationsExceededException(maxGenerations);
     }
     this.finalGenerations = numGenerations;
 
     TimeTable topIndividual = population.getTopIndividual();
     topIndividual.setAncestorsFitness(generationsFitness);
+
     return topIndividual;
   }
 
@@ -463,8 +483,8 @@ public class GA {
     int extraOrMissingLectures = extraOrMissingLectures(tt);
     int multipleTeachersForSameSGCourse = multipleTeachersForSameStudentGroupCourse(tt);
 
-    int numBreaches = 2 * lecturerDoubleBookings + 4 * extraOrMissingLectures
-        + 12 * multipleTeachersForSameSGCourse;
+    int numBreaches = LDB * lecturerDoubleBookings + EML * extraOrMissingLectures
+        + MTSC * multipleTeachersForSameSGCourse;
 
     int fitness = -1 * numBreaches;
     tt.setFitness(fitness);
