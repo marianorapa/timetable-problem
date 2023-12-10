@@ -5,6 +5,9 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.OptionalDouble;
 
 public class CliRunner {
 
@@ -21,13 +24,21 @@ public class CliRunner {
 
     BufferedWriter writer = new BufferedWriter(new FileWriter("output/" + config.getResultsFilename()));
 
+    List<Long> elapsedTimes = new ArrayList<>();
+
     for (int i = 0; i < iterations; i++) {
       try {
+        long startTime = System.nanoTime();
         TimeTable timeTable = ga.generateTimeTable();
+        long endTime = System.nanoTime();
+        long elapsedTime = endTime - startTime;
+        long elapsedTimeMillis = elapsedTime / 1_000_000;
+        elapsedTimes.add(elapsedTimeMillis);
         System.out.println("Timetable from iteration " + i);
         ga.printTimeTable(timeTable);
         int finalGenerations = ga.getFinalGenerations();
         System.out.println("Generations: " + finalGenerations);
+        System.out.println("Elapsed time: " + elapsedTimeMillis + " milliseconds");
         System.out.println("====================================================");
         writer.append(String.valueOf(i)).append(",").append(String.valueOf(finalGenerations)).append("\n");
         BufferedWriter generationsProgress = new BufferedWriter(new FileWriter("output/progress-" + i + "_" + config.getResultsFilename()));
@@ -47,7 +58,10 @@ public class CliRunner {
 
     }
     writer.close();
-
+    OptionalDouble average = elapsedTimes.stream().mapToDouble(Long::doubleValue).average();
+    if (average.isPresent()) {
+      System.out.printf("Average generations execution time: %s millis", average.getAsDouble());
+    }
   }
 
   private static void setupGA(GA ga, Config config) {
